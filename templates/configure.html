@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<title>Configure Monitoring Agent | SysSentinel AI</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<style>
+
+:root {
+--primary:#4ed3e1;
+--primary-dark:#45edeb;
+--dark:#0f2f2a;
+}
+
+body{
+background: radial-gradient(circle at top,#f1fbf8,#edf6f4);
+font-family:"Segoe UI",sans-serif;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+width:260px;
+height:100vh;
+background:linear-gradient(180deg,var(--primary),var(--primary-dark));
+position:fixed;
+}
+
+.sidebar a{
+display:block;
+padding:14px 22px;
+color:#000;
+text-decoration:none;
+border-left:4px solid transparent;
+}
+
+.sidebar a.active,
+.sidebar a:hover{
+background:rgba(255,255,255,0.2);
+border-left:4px solid #fff;
+}
+
+/* CONTENT */
+
+.content{
+margin-left:270px;
+padding:42px;
+}
+
+/* HEADER */
+
+.page-header{
+background:linear-gradient(
+135deg,
+rgba(34,230,248,0.25),
+rgba(6,205,232,0.08)
+);
+
+border:1.5px solid rgba(45,232,239,0.3);
+border-radius:26px;
+padding:36px 40px;
+margin-bottom:45px;
+box-shadow:0 18px 45px rgba(0,0,0,0.08);
+}
+
+.page-header h3{
+font-weight:800;
+margin-bottom:8px;
+color:var(--dark);
+}
+
+/* STATS CARDS */
+
+.stat-card{
+background:white;
+border-radius:18px;
+padding:20px;
+text-align:center;
+box-shadow:0 10px 30px rgba(0,0,0,0.08);
+transition:0.3s;
+}
+
+.stat-card:hover{
+transform:translateY(-6px);
+}
+
+.stat-icon{
+font-size:30px;
+color:var(--primary);
+margin-bottom:10px;
+}
+
+/* CONFIG CARD */
+
+.config-card{
+border-radius:24px;
+padding:34px;
+
+background:linear-gradient(
+135deg,
+#ffffff 0%,
+#7ddee0 40%,
+#e9f8f3 100%
+);
+
+border:1.5px solid rgba(76,209,205,0.35);
+box-shadow:0 16px 36px rgba(0,0,0,0.1);
+}
+
+.form-control{
+border-radius:12px;
+padding:10px;
+}
+
+.btn-main{
+background:var(--primary);
+border:none;
+padding:10px 22px;
+border-radius:12px;
+font-weight:600;
+}
+
+.btn-main:hover{
+background:#34c7d3;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+
+<div class="sidebar p-3">
+
+<h4 class="text-center mb-4">
+<i class="fa fa-microchip"></i> SysSentinel AI
+<small class="d-block fs-6">User Panel</small>
+</h4>
+
+<a href="/dashboard">
+<i class="fa fa-gauge me-2"></i> Dashboard
+</a>
+
+<a href="/systems">
+<i class="fa fa-server me-2"></i> Systems Monitoring
+</a>
+
+<a href="/configure" class="active">
+<i class="fa fa-network-wired me-2"></i> Configure Agent
+</a>
+
+<hr>
+
+<a href="/logout" class="text-danger">
+<i class="fa fa-sign-out-alt me-2"></i> Logout
+</a>
+
+</div>
+
+
+<!-- MAIN CONTENT -->
+
+<div class="content">
+
+<div class="page-header">
+
+<h3>
+<i class="fa-solid fa-network-wired"></i>
+Configure Monitoring Agent
+</h3>
+
+<p class="text-muted">
+Deploy monitoring agents to remote systems to start collecting real-time performance metrics.
+</p>
+
+</div>
+
+
+<!-- STATS ROW -->
+
+<div class="row g-4 mb-5">
+
+<div class="col-md-4">
+
+<div class="stat-card">
+
+<div class="stat-icon">
+<i class="fa fa-server"></i>
+</div>
+
+<h5>Connected Systems</h5>
+
+<p class="text-muted">View monitored machines</p>
+
+</div>
+
+</div>
+
+
+<div class="col-md-4">
+
+<div class="stat-card">
+
+<div class="stat-icon">
+<i class="fa fa-network-wired"></i>
+</div>
+
+<h5>Agent Deployment</h5>
+
+<p class="text-muted">Run remote monitoring agents</p>
+
+</div>
+
+</div>
+
+
+<div class="col-md-4">
+
+<div class="stat-card">
+
+<div class="stat-icon">
+<i class="fa fa-chart-line"></i>
+</div>
+
+<h5>Live Monitoring</h5>
+
+<p class="text-muted">Stream real-time system metrics</p>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- CONFIG FORM -->
+
+<div class="config-card">
+
+<h4 class="mb-3">
+
+<i class="fa fa-cogs"></i>
+Configure Remote Monitoring Agent
+
+</h4>
+
+<form method="POST" action="/run_agent">
+
+<div class="mb-3">
+
+<label class="form-label">
+
+<i class="fa fa-network-wired"></i>
+Target System IP
+
+</label>
+
+<input type="text"
+name="ip"
+class="form-control"
+placeholder="192.168.1.25"
+required>
+
+</div>
+
+<button class="btn btn-main">
+
+<i class="fa fa-play"></i>
+Configure & Run Agent
+
+</button>
+
+</form>
+
+
+{% if message %}
+
+<div class="alert alert-info mt-4">
+
+<i class="fa fa-info-circle"></i>
+{{ message }}
+
+</div>
+
+{% endif %}
+
+</div>
+
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

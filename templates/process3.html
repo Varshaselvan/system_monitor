@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Model Training | SysSentinel</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+:root {
+    --primary: #4ed3e1;
+    --dark: #0f2f2a;
+}
+
+body {
+    background: radial-gradient(circle at top, #f1fbf8, #edf6f4);
+    font-family: "Segoe UI", sans-serif;
+}
+
+.sidebar {
+    width: 260px;
+    height: 100vh;
+    background: linear-gradient(180deg, #4ed3e1, #45edeb);
+    position: fixed;
+}
+
+.sidebar a {
+    display: block;
+    padding: 14px 22px;
+    color: #000;
+    text-decoration: none;
+    border-left: 4px solid transparent;
+}
+
+.sidebar a.active,
+.sidebar a:hover {
+    background: rgba(255,255,255,0.2);
+    border-left: 4px solid #fff;
+}
+
+.content {
+    margin-left: 270px;
+    padding: 42px;
+}
+
+.page-header {
+    background: rgba(78, 211, 225, 0.15);
+    border-radius: 20px;
+    padding: 28px;
+    margin-bottom: 30px;
+    border: 1px solid rgba(78, 211, 225, 0.3);
+}
+
+.result-box {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 30px;
+    border: 1px solid rgba(78, 211, 225, 0.3);
+    box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+}
+
+.accuracy-value {
+    font-size: 46px;
+    font-weight: 900;
+    color: #17b978;
+}
+
+.chart-box {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 18px;
+    border: 1px solid rgba(78, 211, 225, 0.3);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+}
+
+canvas {
+    height: 220px !important;
+}
+
+pre {
+    background: #f8ffff;
+    padding: 18px;
+    border-radius: 14px;
+    font-size: 12px;
+}
+
+.btn-next {
+    background: linear-gradient(135deg, #4ed3e1, #38e2ee);
+    color: #fff;
+    border-radius: 14px;
+    padding: 12px 22px;
+    font-weight: 600;
+    border: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar p-3">
+    <h4 class="text-center mb-4 fw-bold">
+        <i class="fa fa-microchip"></i> SysSentinel
+        <small class="d-block fs-6">Admin Panel</small>
+    </h4>
+
+    <a href="/admin/dashboard">
+        <i class="fa fa-gauge me-2"></i> Dashboard
+    </a>
+
+    <a href="/process3" class="active">
+        <i class="fa fa-brain me-2"></i> Model Training
+    </a>
+
+    <hr>
+    <a href="/logout" class="text-danger">
+        <i class="fa fa-sign-out-alt me-2"></i> Logout
+    </a>
+</div>
+
+<div class="content">
+
+    <div class="page-header">
+        <h4><i class="fa fa-brain"></i> MLP Model Training Results</h4>
+        <small class="text-muted">System Anomaly Detection using Neural Network</small>
+    </div>
+
+    <div class="result-box mb-4">
+        <h2>Final Model Accuracy</h2>
+        <div class="accuracy-value">{{ accuracy }}%</div>
+    </div>
+
+    <!-- GRAPHS SIDE BY SIDE -->
+    <div class="row g-4 mb-4">
+
+        <div class="col-md-6">
+            <div class="chart-box">
+                <h6><i class="fa fa-chart-line"></i> Training Accuracy</h6>
+                <canvas id="accuracyChart"></canvas>
+            </div>
+        </div>
+
+        <div class="col-md-6">
+            <div class="chart-box">
+                <h6><i class="fa fa-chart-area"></i> Training Loss</h6>
+                <canvas id="lossChart"></canvas>
+            </div>
+        </div>
+
+    </div>
+
+<div class="result-box">
+    <h5 class="mb-3">
+        <i class="fa fa-file-lines"></i> Classification Report
+    </h5>
+
+    <div class="table-responsive">
+        <table class="table table-hover align-middle text-center">
+            <thead class="table-light">
+                <tr>
+                    <th>Class</th>
+                    <th>Precision</th>
+                    <th>Recall</th>
+                    <th>F1-Score</th>
+                    <th>Support</th>
+                </tr>
+            </thead>
+            <tbody>
+
+                {% for label, metrics in report.items() %}
+                    {% if label not in ['accuracy', 'macro avg', 'weighted avg'] %}
+                    <tr>
+                        <td><strong>{{ label }}</strong></td>
+                        <td>{{ "%.2f"|format(metrics.precision) }}</td>
+                        <td>{{ "%.2f"|format(metrics.recall) }}</td>
+                        <td>{{ "%.2f"|format(metrics['f1-score']) }}</td>
+                        <td>{{ metrics.support }}</td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+
+                <!-- Accuracy Row -->
+                <tr class="table-success fw-bold">
+                    <td colspan="4">Overall Accuracy</td>
+                    <td>{{ "%.2f"|format(report.accuracy * 100) }}%</td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+    <div class="text-end mt-4">
+        <a href="/admin/dashboard" class="btn btn-next"><i class="fa fa-arrow-left ms-1"></i>
+            Back to Dashboard </i>
+        </a>
+    </div>
+
+</div>
+
+<script>
+const epochs = {{ epochs | safe }};
+const accData = {{ train_acc | safe }};
+const lossData = {{ loss | safe }};
+
+new Chart(document.getElementById('accuracyChart'), {
+    type: 'line',
+    data: {
+        labels: epochs,
+        datasets: [{
+            label: 'Accuracy (%)',
+            data: accData,
+            borderColor: '#17b978',
+            fill: false,
+            tension: 0.3
+        }]
+    }
+});
+
+new Chart(document.getElementById('lossChart'), {
+    type: 'line',
+    data: {
+        labels: epochs,
+        datasets: [{
+            label: 'Loss',
+            data: lossData,
+            borderColor: '#ff6b6b',
+            fill: false,
+            tension: 0.3
+        }]
+    }
+});
+</script>
+
+</body>
+</html>

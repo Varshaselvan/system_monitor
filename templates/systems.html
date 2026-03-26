@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+
+<meta charset="UTF-8">
+<title>Systems Monitoring | SysSentinel</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<style>
+
+body{
+background:linear-gradient(135deg,#eef6f7,#dff4f6);
+font-family:"Segoe UI";
+}
+
+/* SIDEBAR */
+
+.sidebar{
+width:260px;
+height:100vh;
+position:fixed;
+background:linear-gradient(180deg,#4ed3e1,#45edeb);
+}
+
+.sidebar a{
+display:block;
+padding:14px 20px;
+text-decoration:none;
+color:#000;
+border-left:4px solid transparent;
+}
+
+.sidebar a:hover,
+.sidebar a.active{
+background:rgba(255,255,255,0.2);
+border-left:4px solid white;
+}
+
+/* CONTENT */
+
+.content{
+margin-left:270px;
+padding:40px;
+}
+
+/* CARD */
+
+.system-card{
+background:white;
+border-radius:20px;
+padding:22px;
+box-shadow:0 10px 30px rgba(0,0,0,0.12);
+transition:0.3s;
+}
+
+.system-card:hover{
+transform:translateY(-6px);
+}
+
+/* STATUS */
+
+.status-normal{
+background:#28c76f;
+color:white;
+padding:4px 10px;
+border-radius:20px;
+font-size:11px;
+}
+
+.status-anomaly{
+background:#ea5455;
+color:white;
+padding:4px 10px;
+border-radius:20px;
+font-size:11px;
+}
+
+/* METRICS */
+
+.metric-grid{
+display:grid;
+grid-template-columns:1fr 1fr 1fr;
+gap:8px;
+}
+
+.metric{
+background:#f8fbfc;
+padding:8px;
+border-radius:8px;
+font-size:12px;
+}
+
+/* ALERT BADGE */
+
+.alert-badge{
+position:absolute;
+top:-6px;
+right:-6px;
+}
+
+/* ========================= */
+/* DESKTOP NOTIFICATION */
+/* ========================= */
+
+.notification-container{
+position:fixed;
+bottom:20px;
+right:20px;
+width:380px;
+z-index:9999;
+}
+
+.desktop-notification{
+background:white;
+border-left:6px solid #ea5455;
+border-radius:14px;
+box-shadow:0 12px 30px rgba(0,0,0,0.30);
+padding:18px;
+margin-top:12px;
+animation:slideUp 0.4s ease;
+}
+
+.desktop-notification h6{
+font-weight:700;
+font-size:16px;
+margin-bottom:8px;
+}
+
+.desktop-notification p{
+font-size:14px;
+margin:4px 0;
+}
+
+.metric-mini{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:6px;
+margin-top:8px;
+}
+
+.metric-mini div{
+background:#f6f9fa;
+padding:6px 8px;
+border-radius:6px;
+font-size:13px;
+}
+
+.close-notification{
+float:right;
+cursor:pointer;
+color:#888;
+font-size:15px;
+}
+
+@keyframes slideUp{
+from{
+transform:translateY(60px);
+opacity:0;
+}
+to{
+transform:translateY(0);
+opacity:1;
+}
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div id="notification_container" class="notification-container"></div>
+
+<!-- SIDEBAR -->
+
+<div class="sidebar p-3">
+
+<h4 class="text-center mb-4">
+<i class="fa fa-microchip"></i> SysSentinel
+</h4>
+
+<a href="/dashboard">
+<i class="fa fa-gauge"></i> Dashboard
+</a>
+
+<a href="/systems" class="active">
+<i class="fa fa-server"></i> Systems
+</a>
+
+<a href="/configure">
+<i class="fa fa-network-wired"></i> Configure
+</a>
+
+<hr>
+
+<a href="/logout" class="text-danger">
+<i class="fa fa-sign-out-alt"></i> Logout
+</a>
+
+</div>
+
+<!-- CONTENT -->
+
+<div class="content">
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+
+<h3>
+<i class="fa fa-server"></i> Connected Systems
+</h3>
+
+<div class="dropdown">
+
+<button class="btn btn-light position-relative"
+data-bs-toggle="dropdown">
+
+<i class="fa fa-bell fa-lg"></i>
+
+<span id="anomaly_count"
+class="badge bg-danger rounded-pill alert-badge">
+0 </span>
+
+</button>
+
+<ul class="dropdown-menu dropdown-menu-end shadow"
+style="width:330px">
+
+<li class="dropdown-header fw-bold">
+<i class="fa fa-triangle-exclamation text-danger"></i>
+System Alerts
+</li>
+
+<div id="alert_list"></div>
+
+</ul>
+
+</div>
+
+</div>
+
+<div class="mb-3">
+
+<span class="badge bg-success fs-6"
+id="normal_count">Normal: 0</span>
+
+<span class="badge bg-danger fs-6"
+id="anomaly_total">Anomaly: 0</span>
+
+</div>
+
+<div class="row g-4" id="systems_container"></div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+
+let shownNotifications = new Set()
+
+function showDesktopNotification(system){
+
+let id = system.hostname
+
+if(shownNotifications.has(id)) return
+
+shownNotifications.add(id)
+
+let html = `
+
+<div class="desktop-notification" id="notify_${id}">
+
+<span class="close-notification"
+onclick="closeNotification('${id}')">
+<i class="fa fa-times"></i>
+</span>
+
+<h6>
+<i class="fa fa-triangle-exclamation text-danger"></i>
+Anomaly Detected
+</h6>
+
+<p><b>${system.hostname}</b></p>
+
+<p style="color:#ea5455;font-weight:600">
+${system.anomaly_reason}
+</p>
+
+<div class="metric-mini">
+
+<div>CPU ${system.cpu_usage}%</div>
+<div>RAM ${system.ram_percent}%</div>
+
+<div>Disk ${system.disk_percent}%</div>
+<div>Temp ${system.temperature}°C</div>
+
+</div>
+
+</div>
+
+`
+
+$("#notification_container").append(html)
+
+}
+
+function closeNotification(id){
+
+$("#notify_"+id).remove()
+shownNotifications.delete(id)
+
+}
+
+function loadSystems(){
+
+$.getJSON("/api/systems", function(data){
+
+let systems={}
+let cards=""
+
+let normalCount=0
+let anomalyCount=0
+let alerts=""
+
+data.forEach(function(s){
+
+if(!systems[s.hostname]){
+systems[s.hostname]=s
+}
+
+})
+
+Object.values(systems).forEach(function(s){
+
+let anomaly=s.anomaly || "Normal"
+let reason=s.anomaly_reason || ""
+let statusClass=(anomaly==="Anomaly")?"status-anomaly":"status-normal"
+
+if(anomaly==="Anomaly"){
+
+anomalyCount++
+
+showDesktopNotification(s)
+
+alerts+=`
+
+<li class="dropdown-item">
+
+<div class="fw-bold">
+<i class="fa fa-computer text-danger"></i>
+${s.hostname}
+</div>
+
+<div style="font-size:12px;color:#ea5455">
+${reason}
+</div>
+
+</li>
+
+`
+
+}else{
+
+normalCount++
+
+}
+
+cards+=`
+
+<div class="col-lg-6">
+
+<div class="system-card">
+
+<h5>
+
+<i class="fa fa-computer text-primary"></i>
+${s.hostname}
+
+<span class="${statusClass}">
+${anomaly}
+</span>
+
+</h5>
+
+${anomaly==="Anomaly" ? `
+<div style="color:#ea5455;font-size:13px;font-weight:600">
+<i class="fa fa-triangle-exclamation"></i>
+${reason}
+</div>
+` : ""}
+
+<div class="text-muted mb-2">
+<i class="fa fa-clock"></i> ${s.timestamp}
+</div>
+
+<div class="section-title">System Info</div>
+
+<div class="metric-grid">
+
+<div class="metric">IP: ${s.ip}</div>
+<div class="metric">OS: ${s.os_name}</div>
+<div class="metric">Version: ${s.os_version}</div>
+
+<div class="metric">CPU</div>
+<div class="metric" style="grid-column:span 2">
+${s.cpu_model}
+</div>
+
+</div>
+
+<div class="section-title">CPU</div>
+
+<div class="metric-grid">
+
+<div class="metric">Usage ${s.cpu_usage}%</div>
+<div class="metric">Freq ${s.cpu_freq} MHz</div>
+<div class="metric">Cores ${s.cpu_cores}</div>
+
+<div class="metric">Threads ${s.cpu_threads}</div>
+<div class="metric">User ${s.cpu_user}%</div>
+<div class="metric">System ${s.cpu_system}%</div>
+
+</div>
+
+<div class="section-title">Memory</div>
+
+<div class="metric-grid">
+
+<div class="metric">Total ${s.ram_total} GB</div>
+<div class="metric">Used ${s.ram_used} GB</div>
+<div class="metric">Free ${s.ram_free} GB</div>
+
+<div class="metric">Usage ${s.ram_percent}%</div>
+
+</div>
+
+<div class="section-title">Disk</div>
+
+<div class="metric-grid">
+
+<div class="metric">Total ${s.disk_total} GB</div>
+<div class="metric">Used ${s.disk_used} GB</div>
+<div class="metric">Free ${s.disk_free} GB</div>
+
+<div class="metric">Usage ${s.disk_percent}%</div>
+
+</div>
+
+<div class="section-title">Processes</div>
+
+<div class="metric-grid">
+
+<div class="metric">Processes ${s.process_count}</div>
+<div class="metric">Threads ${s.thread_count}</div>
+<div class="metric">Battery ${s.battery_percent}%</div>
+
+<div class="metric">Temp ${s.temperature}°C</div>
+
+</div>
+
+</div>
+
+</div>
+
+`
+
+})
+
+if(alerts===""){
+alerts=`<li class="dropdown-item text-success">No anomalies detected</li>`
+}
+
+$("#systems_container").html(cards)
+
+$("#normal_count").text("Normal: "+normalCount)
+$("#anomaly_total").text("Anomaly: "+anomalyCount)
+$("#anomaly_count").text(anomalyCount)
+
+$("#alert_list").html(alerts)
+
+})
+
+}
+
+setInterval(loadSystems,5000)
+loadSystems()
+
+</script>
+
+</body>
+
+</html>

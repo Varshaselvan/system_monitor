@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Final Dataset Preview | SysSentinel</title>
+
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<!-- Font Awesome -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<style>
+:root {
+    --primary: #4ed3e1;
+    --primary-dark: #45edeb;
+    --dark: #0f2f2a;
+}
+
+body {
+    background: radial-gradient(circle at top, #f1fbf8, #edf6f4);
+    font-family: "Segoe UI", sans-serif;
+}
+
+/* SIDEBAR */
+.sidebar {
+    width: 260px;
+    height: 100vh;
+    background: linear-gradient(180deg, var(--primary), var(--primary-dark));
+    position: fixed;
+}
+
+.sidebar a {
+    display: block;
+    padding: 14px 22px;
+    color: #000;
+    text-decoration: none;
+    border-left: 4px solid transparent;
+}
+
+.sidebar a.active,
+.sidebar a:hover {
+    background: rgba(255,255,255,0.2);
+    border-left: 4px solid #fff;
+}
+
+/* CONTENT */
+.content {
+    margin-left: 270px;
+    padding: 42px;
+}
+
+/* HEADER */
+.page-header {
+    background: linear-gradient(
+        135deg,
+        rgba(45, 209, 238, 0.25),
+        rgba(74, 206, 233, 0.08)
+    );
+    border-radius: 26px;
+    padding: 34px 40px;
+    margin-bottom: 30px;
+    border: 1.5px solid rgba(83, 211, 225, 0.3);
+}
+
+.page-header h4 {
+    font-weight: 800;
+    color: var(--dark);
+}
+
+/* TABLE WRAPPER */
+.table-wrapper {
+    background: linear-gradient(135deg, #ffffff, #f6fffc);
+    border-radius: 24px;
+    padding: 26px;
+    border: 1.5px solid rgba(32, 198, 201, 0.3);
+    box-shadow: 0 18px 38px rgba(0,0,0,0.12);
+}
+
+/* TABLE HEADER */
+.table thead {
+    background: linear-gradient(135deg, var(--primary), #138879);
+}
+
+.table thead th {
+    background-color: #50d8ed;
+    color: #000000;
+    font-weight: 700;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 12px;
+    border: none;
+    white-space: nowrap;
+}
+
+.table thead th:first-child {
+    border-top-left-radius: 14px;
+}
+
+.table thead th:last-child {
+    border-top-right-radius: 14px;
+}
+
+/* TABLE BODY */
+.table tbody td {
+    padding: 8px 10px;
+    font-size: 13px;
+    border: 1px solid rgba(53, 228, 237, 0.25);
+    white-space: nowrap;
+}
+
+.table tbody tr:hover {
+    background: rgba(32,201,151,0.08);
+}
+
+/* BUTTON */
+.btn-next {
+    background: linear-gradient(135deg, var(--primary), #38e2ee);
+    color: #fff;
+    border-radius: 14px;
+    padding: 12px 22px;
+    font-weight: 600;
+    border: none;
+}
+
+.btn-next:hover {
+    box-shadow: 0 10px 26px rgba(26, 187, 215, 0.45);
+    transform: translateY(-2px);
+}
+
+/* FOOTER */
+.footer {
+    margin-top: 40px;
+    text-align: center;
+    font-size: 13px;
+    color: #39d3d3;
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar p-3">
+    <h4 class="text-center mb-4 fw-bold">
+        <i class="fa fa-microchip"></i> SysSentinel
+        <small class="d-block fs-6">Admin Panel</small>
+    </h4>
+
+    <a href="/admin/dashboard">
+        <i class="fa fa-gauge me-2"></i> Dashboard
+    </a>
+
+    <a href="/process4" class="active">
+        <i class="fa fa-database me-2"></i> Final Dataset Preview
+    </a>
+
+    <hr>
+    <a href="/logout" class="text-danger">
+        <i class="fa fa-sign-out-alt me-2"></i> Logout
+    </a>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="content">
+
+    <!-- HEADER -->
+    <div class="page-header">
+        <h4>
+            <i class="fa fa-database"></i>
+            Final Dataset Preview
+        </h4>
+        <small class="text-muted">
+            Review processed dataset used for anomaly detection model training
+        </small>
+    </div>
+
+    <!-- TABLE -->
+    <div class="table-wrapper table-responsive">
+
+        <table class="table table-hover align-middle mb-0">
+            <thead>
+                <tr>
+                    {% for col in columns %}
+                        <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    {% for item in row %}
+                        <td>{{ item }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+
+    <!-- ACTION -->
+    <div class="text-end mt-4">
+        <a href="/process5" class="btn btn-next">
+            Next Process <i class="fa fa-arrow-right ms-1"></i>
+        </a>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+        SysSentinel Infrastructure Monitoring System © 2026
+    </div>
+
+</div>
+
+</body>
+</html>

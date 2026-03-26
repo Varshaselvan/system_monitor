@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Feature Extraction | ClickGuard AI</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+
+<style>
+:root {
+    --primary: #4ed3e1;
+    --primary-dark: #45edeb;
+    --dark: #0f2f2a;
+}
+
+body {
+    background: radial-gradient(circle at top, #f1fbf8, #edf6f4);
+    font-family: "Segoe UI", sans-serif;
+}
+
+/* SIDEBAR */
+.sidebar {
+    width: 260px;
+    height: 100vh;
+    background: linear-gradient(180deg, var(--primary), var(--primary-dark));
+    position: fixed;
+}
+
+.sidebar a {
+    display: block;
+    padding: 14px 22px;
+    color: #000;
+    text-decoration: none;
+    border-left: 4px solid transparent;
+}
+
+.sidebar a.active,
+.sidebar a:hover {
+    background: rgba(255,255,255,0.2);
+    border-left: 4px solid #fff;
+}
+
+/* CONTENT */
+.content {
+    margin-left: 270px;
+    padding: 40px;
+}
+
+/* HEADER */
+.dashboard-header {
+    background: linear-gradient(135deg, rgba(34,230,248,0.25), rgba(6,205,232,0.08));
+    border-radius: 26px;
+    padding: 32px;
+    margin-bottom: 30px;
+    border: 1.5px solid rgba(45,232,239,0.3);
+}
+
+/* TABLE WRAPPER */
+.table-wrapper {
+    background: linear-gradient(135deg, #ffffff, #f6fffc);
+    border-radius: 24px;
+    padding: 26px;
+    border: 1.5px solid rgba(32, 198, 201, 0.3);
+    box-shadow: 0 18px 38px rgba(0,0,0,0.12);
+    overflow-x: auto;
+}
+
+.table thead th {
+    background-color: #50d8ed;
+    font-weight: 700;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.table tbody td {
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.footer {
+    margin-top: 40px;
+    text-align: center;
+    font-size: 14px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- SIDEBAR -->
+<div class="sidebar p-3">
+    <h4 class="text-center mb-4">
+        <i class="fa fa-microchip"></i> ClickGuard AI
+        <small class="d-block fs-6">Admin Panel</small>
+    </h4>
+
+    <a href="/admin/dashboard">
+        <i class="fa fa-gauge me-2"></i> Dashboard
+    </a>
+
+    <a href="/process" class="active">
+        <i class="fa fa-database me-2"></i> Feature Extraction
+    </a>
+
+    <a href="/logout" class="text-danger">
+        <i class="fa fa-sign-out-alt me-2 text-danger"></i> Logout
+    </a>
+</div>
+
+<!-- CONTENT -->
+<div class="content">
+
+    <div class="dashboard-header">
+        <h3>
+            <i class="fa-solid fa-database text-primary"></i>
+            Feature Extraction
+        </h3>
+        <small class="text-muted">
+            System metrics with randomly generated anomaly label
+        </small>
+    </div>
+
+    <div class="table-wrapper">
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    {% for col in columns %}
+                        <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    {% for value in row %}
+                        <td>
+                            {% if value == 1 %}
+                                <span class="badge bg-danger">1</span>
+                            {% elif value == 0 %}
+                                <span class="badge bg-success">0</span>
+                            {% else %}
+                                {{ value }}
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="text-end mt-4">
+        <a href="/process3" class="btn btn-next">
+            Next Process <i class="fa fa-arrow-right ms-1"></i>
+        </a>
+    </div>
+    <div class="footer">
+        © 2026 ClickGuard AI | Feature Extraction Module
+    </div>
+
+</div>
+
+</body>
+</html>
